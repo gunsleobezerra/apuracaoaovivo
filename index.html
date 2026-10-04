@@ -58,7 +58,29 @@
     padding-bottom:14px;
     border-bottom:1px solid var(--bd);
   }
-  .head-title{flex:1;min-width:240px}
+  .head-brand{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:1;
+    min-width:260px;
+  }
+  .election-logo{
+    height:56px;
+    width:auto;
+    object-fit:contain;
+    filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5));
+    border-radius:8px;
+    background:rgba(255,255,255,0.04);
+    padding:3px 6px;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:transform .2s ease,border-color .2s ease;
+  }
+  .election-logo:hover{
+    transform:scale(1.04);
+    border-color:rgba(255,255,255,0.22);
+  }
+  .head-title{flex:1;min-width:200px}
   h1{font-size:20px;font-weight:700;letter-spacing:-.3px;color:#fff}
   .sub{color:var(--fg2);font-size:12.5px;margin-top:4px}
   .sub b{color:var(--fg);font-weight:600}
@@ -175,6 +197,49 @@
     color:#e0f2fe;
     box-shadow:0 2px 8px rgba(56,189,248,0.25);
   }
+
+  /* ── Botão de Áudio com Equalizador ── */
+  .btn-audio{
+    position:relative;
+    border-color:rgba(56,189,248,0.3);
+    color:#e0f2fe;
+  }
+  .btn-audio:hover{
+    border-color:#38bdf8;
+    background:rgba(56,189,248,0.12);
+  }
+  .btn-audio.playing{
+    background:rgba(56,189,248,0.18);
+    border-color:#38bdf8;
+    color:#38bdf8;
+    box-shadow:0 0 14px rgba(56,189,248,0.3);
+  }
+  .audio-waves{
+    display:none;
+    align-items:flex-end;
+    gap:2px;
+    height:13px;
+    width:14px;
+    flex-shrink:0;
+  }
+  .audio-waves span{
+    display:block;
+    width:2px;
+    background:#38bdf8;
+    border-radius:1px;
+    animation:eq 0.7s ease-in-out infinite alternate;
+  }
+  .audio-waves span:nth-child(1){height:35%;animation-delay:0.1s}
+  .audio-waves span:nth-child(2){height:90%;animation-delay:0.35s}
+  .audio-waves span:nth-child(3){height:55%;animation-delay:0.2s}
+  .audio-waves span:nth-child(4){height:100%;animation-delay:0.45s}
+  @keyframes eq{
+    0%{height:20%}
+    100%{height:100%}
+  }
+  .btn-audio.playing .audio-waves{display:inline-flex}
+  .btn-audio.playing .audio-icon{display:none}
+
   #demo{
     border-color:rgba(245,158,11,0.35);
     color:#fde68a;
@@ -336,7 +401,7 @@
   .card .note{color:var(--fg3);font-size:12px}
   .body{padding:14px 16px}
 
-  .chartwrap{position:relative;width:100%;height:360px}
+  .chartwrap{position:relative;width:100%;height:370px}
   canvas{display:block;width:100%;height:100%;touch-action:none}
 
   #tip{
@@ -498,13 +563,14 @@
   /* ═══════════════ Media Queries / Responsividade ═══════════════ */
   @media(max-width:1024px){
     .split{grid-template-columns:1fr}
-    .chartwrap{height:320px}
+    .chartwrap{height:330px}
   }
 
   @media(max-width:768px){
     body{padding:14px}
     header{flex-direction:column;align-items:stretch;gap:14px}
-    .head-title{width:100%}
+    .head-brand{width:100%;gap:12px}
+    .election-logo{height:46px;padding:2px 4px}
     .controls{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -513,6 +579,7 @@
     }
     .controls .pill{grid-column:1 / 2;width:100%;justify-content:center}
     .controls #interval{grid-column:2 / 3;width:100%}
+    .controls #btn-audio{grid-column:span 2;width:100%}
     .controls button{width:100%}
 
     .selector{
@@ -535,7 +602,7 @@
     .stats{grid-template-columns:repeat(2,1fr);gap:8px}
     .stat.stat-wide{grid-column:span 2}
     .stat .val{font-size:18px}
-    .chartwrap{height:280px}
+    .chartwrap{height:290px}
   }
 
   @media(max-width:540px){
@@ -569,9 +636,12 @@
 <body>
 
 <header>
-  <div class="head-title">
-    <h1 id="ttl">Apuração — 2026</h1>
-    <div class="sub" id="subtitle">carregando…</div>
+  <div class="head-brand">
+    <img src="logo.png" alt="Eleições 2026 #VotoNaDemocracia" class="election-logo" id="logo">
+    <div class="head-title">
+      <h1 id="ttl">Apuração — 2026</h1>
+      <div class="sub" id="subtitle">carregando…</div>
+    </div>
   </div>
   <div class="controls">
     <span class="pill"><span class="dot" id="dot"></span><span id="status">iniciando…</span></span>
@@ -591,6 +661,16 @@
       <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
       <span>Coletar agora</span>
     </button>
+    <button id="btn-audio" class="btn-audio" title="Tocar / Pausar trilha sonora da apuração">
+      <span class="audio-waves">
+        <span></span><span></span><span></span><span></span>
+      </span>
+      <svg class="btn-icon audio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+      <span id="audio-text">Trilha sonora</span>
+    </button>
     <button id="csv">
       <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       <span>CSV</span>
@@ -601,6 +681,7 @@
     </button>
   </div>
 </header>
+<audio id="bgm" src="trilha.mp3" loop preload="auto"></audio>
 
 <div class="selector">
   <div class="selgroup">
@@ -635,7 +716,7 @@
   <div class="divider"></div>
   <div class="selgroup span-2-mobile">
     <button id="todas">
-      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span>Ver todos os estados</span>
     </button>
   </div>
@@ -772,6 +853,77 @@ const pad6 = n => String(n).padStart(6,"0");
 const dataUrl  = () => `${HOST}/${CICLO}/${cfg().ele}/dados/${state.uf}/${state.uf}-c${cfg().cargo}-e${pad6(cfg().ele)}-u.json`;
 const photoUrl = sq => `${HOST}/${CICLO}/${cfg().ele}/fotos/${state.uf}/${sq}.jpeg`;
 
+/* ═══════════════ cache de imagens de candidatos para Canvas ═══════════════ */
+const candImgCache = new Map();
+function getCandImg(url){
+  if(!url) return null;
+  if(candImgCache.has(url)){
+    const entry = candImgCache.get(url);
+    return entry.loaded ? entry.img : null;
+  }
+  const img = new Image();
+  const entry = { img, loaded: false };
+  candImgCache.set(url, entry);
+  img.onload = () => {
+    entry.loaded = true;
+    drawChart();
+  };
+  img.onerror = () => {
+    entry.loaded = false;
+  };
+  img.src = url;
+  return null;
+}
+function preloadCandidatePhotos(){
+  if(!state.photos) return;
+  for(const n in state.cands){
+    if(state.cands[n]?.photo) getCandImg(state.cands[n].photo);
+  }
+}
+
+/* ═══════════════ áudio de fundo (trilha da apuração) ═══════════════ */
+const bgm = $("bgm");
+let audioPlaying = false;
+
+function updateAudioUI(playing){
+  audioPlaying = playing;
+  const btn = $("btn-audio");
+  if(!btn) return;
+  btn.classList.toggle("playing", playing);
+  $("audio-text").textContent = playing ? "Trilha: Tocando" : "Trilha sonora";
+}
+
+function initAudio(){
+  if(!bgm) return;
+  bgm.volume = 0.35;
+  const p = bgm.play();
+  if(p && typeof p.then === "function"){
+    p.then(()=>updateAudioUI(true)).catch(()=>{
+      updateAudioUI(false);
+      const unlock = () => {
+        bgm.play().then(()=>updateAudioUI(true)).catch(()=>{});
+        window.removeEventListener("click", unlock);
+        window.removeEventListener("touchstart", unlock);
+        window.removeEventListener("keydown", unlock);
+      };
+      window.addEventListener("click", unlock, { once: true });
+      window.addEventListener("touchstart", unlock, { once: true });
+      window.addEventListener("keydown", unlock, { once: true });
+    });
+  }
+}
+
+$("btn-audio").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  if(!bgm) return;
+  if(bgm.paused){
+    bgm.play().then(()=>updateAudioUI(true)).catch(console.error);
+  } else {
+    bgm.pause();
+    updateAudioUI(false);
+  }
+});
+
 /* ═══════════════ persistência ═══════════════ */
 function save(){
   try{
@@ -787,6 +939,7 @@ function load(){
     const c=localStorage.getItem(state.storageKey+"|c");
     if(c) state.cands=JSON.parse(c);
   }catch(e){}
+  preloadCandidatePhotos();
 }
 
 /* ═══════════════ coleta ═══════════════ */
@@ -856,6 +1009,7 @@ async function collect(manual){
     state.cands=cands;
     state.lastErr=null;
     save();
+    preloadCandidatePhotos();
 
     setStatus("live", state.points.some(p=>p.vv>0) ? "ao vivo" : "apuração não iniciou");
     render();
@@ -979,7 +1133,7 @@ function renderStats(){
   }).join("");
 }
 
-/* ═══════════════ gráfico ═══════════════ */
+/* ═══════════════ gráfico com fotos dos candidatos ═══════════════ */
 const cv=$("chart"), ctx=cv.getContext("2d");
 let geom=null, hoverX=null;
 
@@ -1002,7 +1156,8 @@ function drawChart(){
     geom=null; return;
   }
 
-  const pad={t:16,r:16,b:28,l:64};
+  const isMobile = W < 640;
+  const pad={t:22, r:(isMobile ? 86 : 140), b:28, l:(isMobile ? 48 : 64)};
   const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
   if(pw<=10||ph<=10){ geom=null; return; }
 
@@ -1025,6 +1180,7 @@ function drawChart(){
   const Y=v=>pad.t+ph-(v/yTop)*ph;
   geom={pad,pw,ph,X,Y,t0,t1,yTop,series,W,H};
 
+  /* Linhas de grade e valores no eixo Y */
   ctx.font="11px JetBrains Mono, monospace"; ctx.textBaseline="middle";
   for(let i=0;i<=5;i++){
     const val=yTop*i/5, y=Y(val);
@@ -1034,6 +1190,7 @@ function drawChart(){
     ctx.fillText(compact(val),pad.l-8,y);
   }
 
+  /* Linhas e marcações de tempo no eixo X */
   ctx.textAlign="center"; ctx.textBaseline="top";
   const span=t1-t0;
   const maxTicks=Math.max(2,Math.min(6,Math.floor(pw/74)));
@@ -1044,24 +1201,161 @@ function drawChart(){
     ctx.fillStyle="#64748b";
     const lbl=span<=24*3600e3?fmtT(t):fmtDT(t);
     const half=ctx.measureText(lbl).width/2+3;
-    ctx.fillText(lbl,Math.min(Math.max(x,pad.l+half),W-pad.r-half),pad.t+ph+7);
+    ctx.fillText(lbl,Math.min(Math.max(x,pad.l+half),pad.l+pw-half),pad.t+ph+7);
   }
 
+  /* Desenho das curvas dos candidatos */
   ctx.save();
-  ctx.beginPath(); ctx.rect(pad.l,pad.t-2,pw,ph+4); ctx.clip();
+  ctx.beginPath(); ctx.rect(pad.l,pad.t-6,pw+4,ph+12); ctx.clip();
   ctx.lineJoin="round"; ctx.lineCap="round";
   for(const s of series){
-    ctx.strokeStyle=colorOf(s.num); ctx.lineWidth=2.2;
+    ctx.strokeStyle=colorOf(s.num); ctx.lineWidth=2.4;
     ctx.beginPath();
     s.pts.forEach((q,i)=> i?ctx.lineTo(X(q.t),Y(q.v)):ctx.moveTo(X(q.t),Y(q.v)));
     ctx.stroke();
+
+    /* Ponto final da linha */
     const last=s.pts[s.pts.length-1];
     ctx.fillStyle=colorOf(s.num);
     ctx.beginPath(); ctx.arc(X(last.t),Y(last.v),3.5,0,Math.PI*2); ctx.fill();
+
+    /* Marcações de fotos no meio da curva para candidatos com muitos pontos */
+    if(s.pts.length>=16){
+      const midIdx=Math.floor(s.pts.length*0.5);
+      const midPt=s.pts[midIdx];
+      const mx=X(midPt.t), my=Y(midPt.v);
+      const mRad=isMobile?8:10;
+      const rObj=ranked().find(x=>x.num===s.num);
+      const midImg=(state.photos && rObj?.photo)?getCandImg(rObj.photo):null;
+
+      ctx.save();
+      ctx.beginPath(); ctx.arc(mx,my,mRad,0,Math.PI*2);
+      ctx.fillStyle="#0b0f19"; ctx.fill();
+      if(midImg){
+        ctx.save(); ctx.clip();
+        ctx.drawImage(midImg,mx-mRad,my-mRad,mRad*2,mRad*2);
+        ctx.restore();
+      } else {
+        ctx.fillStyle=colorOf(s.num);
+        ctx.font=`bold ${mRad-1}px Inter, sans-serif`;
+        ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText(initials(s.nome),mx,my);
+      }
+      ctx.strokeStyle=colorOf(s.num); ctx.lineWidth=1.8;
+      ctx.beginPath(); ctx.arc(mx,my,mRad,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
   }
   ctx.restore();
 
-  if(hoverX!=null && hoverX>=pad.l && hoverX<=W-pad.r){
+  /* ═══════════════ FOTOS DOS CANDIDATOS NA PONTA DAS CURVAS ═══════════════ */
+  const heads = series.map(s => {
+    const last = s.pts[s.pts.length - 1];
+    const r = ranked().find(x => x.num === s.num) || { nome: s.nome, num: s.num, p: 0, photo: null };
+    return {
+      num: s.num,
+      nome: r.nome || s.nome,
+      part: r.part || "",
+      pct: r.p || 0,
+      v: last.v,
+      photo: r.photo,
+      color: colorOf(s.num),
+      x: X(last.t),
+      y: Y(last.v),
+      targetY: Y(last.v)
+    };
+  });
+
+  /* Evitar sobreposição vertical ajustando posições de fotos próximas */
+  heads.sort((a,b) => a.y - b.y);
+  const minSpacing = (isMobile ? 26 : 30);
+  for(let i = 1; i < heads.length; i++){
+    if(heads[i].targetY - heads[i-1].targetY < minSpacing){
+      heads[i].targetY = heads[i-1].targetY + minSpacing;
+    }
+  }
+  for(let i = heads.length - 2; i >= 0; i--){
+    if(heads[i+1].targetY - heads[i].targetY < minSpacing){
+      heads[i].targetY = heads[i+1].targetY - minSpacing;
+    }
+  }
+
+  const rad = isMobile ? 12 : 14;
+
+  for(const h of heads){
+    const cx = Math.min(W - rad - 6, h.x + (isMobile ? 12 : 16));
+    const cy = Math.max(pad.t + rad, Math.min(H - pad.b - rad, h.targetY));
+
+    /* Linha pontilhada suave conectando se o avatar foi ajustado verticalmente */
+    if(Math.abs(cy - h.y) > 3){
+      ctx.strokeStyle = h.color + "66";
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(h.x, h.y);
+      ctx.lineTo(cx - rad - 2, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    /* Sombra de destaque do avatar */
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.6)";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    /* Foto do candidato ou iniciais coloridas */
+    const img = (state.photos && h.photo) ? getCandImg(h.photo) : null;
+    if(img){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad - 1, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, cx - rad + 1, cy - rad + 1, (rad - 1) * 2, (rad - 1) * 2);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = h.color + "33";
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad - 1, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = h.color;
+      ctx.font = `bold ${isMobile ? "9px" : "10.5px"} Inter, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initials(h.nome), cx, cy);
+    }
+
+    /* Anel colorido em volta da foto do candidato */
+    ctx.strokeStyle = h.color;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+
+    /* Nome e porcentagem do candidato ao lado da foto */
+    const tx = cx + rad + 6;
+    if(tx + 36 <= W){
+      const shortName = h.nome.split(/\s+/)[0];
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.font = `600 ${isMobile ? "10px" : "11px"} Inter, sans-serif`;
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillText(shortName, tx, cy - (isMobile ? 5 : 6));
+
+      ctx.font = `500 ${isMobile ? "9px" : "10px"} JetBrains Mono, monospace`;
+      ctx.fillStyle = h.color;
+      ctx.fillText(nf2.format(h.pct) + "%", tx, cy + (isMobile ? 6 : 7));
+    }
+  }
+
+  /* Linha guia e tooltip interativo (mouse ou touch) */
+  if(hoverX!=null && hoverX>=pad.l && hoverX<=pad.l+pw){
     const t=t0+((hoverX-pad.l)/pw)*(t1-t0);
     let near=pts[0], bd=Infinity;
     for(const p of pts){ const d=Math.abs(p.t-t); if(d<bd){bd=d;near=p;} }
@@ -1245,8 +1539,8 @@ function renderDist(){
 function renderMeta(){
   const L=state.last, n=state.points.length;
   $("chartnote").textContent = demo.on
-    ? `EXEMPLO FICTÍCIO · ${n} pontos simulados · curva em S`
-    : (L ? `acumulado · ${n} coleta${n!==1?"s":""}${L.dg?" · arquivo TSE de "+L.dg+" "+L.hg:""} · clique na legenda para ocultar`
+    ? `EXEMPLO FICTÍCIO · ${n} pontos simulados · curva em S com fotos dos candidatos`
+    : (L ? `acumulado · ${n} coleta${n!==1?"s":""}${L.dg?" · arquivo TSE de "+L.dg+" "+L.hg:""} · fotos dos candidatos na ponta das curvas`
           : "acumulado · escala linear");
 }
 
@@ -1539,6 +1833,7 @@ load();
 render();
 resize();
 collect(true).then(start);
+initAudio();
 </script>
 </body>
 </html>
