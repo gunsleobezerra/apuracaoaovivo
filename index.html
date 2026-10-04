@@ -2939,5 +2939,136 @@ document.querySelectorAll("nav.tabs button").forEach(b => {
 });
 
 </script>
+
+<!-- ═══════════ Modal PIX ═══════════ -->
+<div id="pix-modal-overlay" onclick="fecharPix()" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  animation:fadeInOverlay .2s ease;
+">
+  <div onclick="event.stopPropagation()" style="
+    background:linear-gradient(145deg,#0f1a2e,#1a2744);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:20px;
+    padding:32px 28px;
+    max-width:380px;
+    width:90%;
+    text-align:center;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);
+    animation:slideUp .25s ease;
+  ">
+    <button onclick="fecharPix()" style="
+      position:absolute;
+      top:12px;
+      right:16px;
+      background:rgba(255,255,255,0.08);
+      border:none;
+      color:#fff;
+      font-size:18px;
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      cursor:pointer;
+      line-height:32px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    ">✕</button>
+    <div style="font-size:28px;margin-bottom:6px;">💚</div>
+    <h2 style="color:#fff;font-size:20px;font-weight:700;margin:0 0 4px;">Apoiar o Projeto</h2>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0 0 20px;">Escaneie o QR Code abaixo para fazer um PIX</p>
+    <div style="
+      background:#fff;
+      border-radius:14px;
+      padding:14px;
+      display:inline-block;
+      box-shadow:0 8px 24px rgba(0,0,0,0.3);
+      margin-bottom:16px;
+    ">
+      <img src="pix_qrcode.png" alt="QR Code PIX" style="width:220px;height:220px;display:block;border-radius:6px;">
+    </div>
+    <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">Qualquer valor ajuda muito! Obrigado 🙏</p>
+  </div>
+</div>
+
+<!-- ═══════════ Botão flutuante PIX ═══════════ -->
+<button id="pix-fab" onclick="abrirPix()" title="Apoiar via PIX" style="
+  position:fixed;
+  bottom:28px;
+  right:28px;
+  z-index:999;
+  background:linear-gradient(135deg,#00c853,#00897b);
+  color:#fff;
+  border:none;
+  border-radius:50px;
+  padding:0 22px;
+  height:52px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 6px 20px rgba(0,200,83,0.4);
+  transition:transform .2s,box-shadow .2s;
+" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 28px rgba(0,200,83,0.55)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px rgba(0,200,83,0.4)'">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.06 11.57c.44-.44.44-1.16 0-1.6l-3.03-3.03a1.13 1.13 0 0 0-1.6 0L9.4 10.0l4.6 4.6 3.06-3.03ZM6.94 12.43c-.44.44-.44 1.16 0 1.6l3.03 3.03c.44.44 1.16.44 1.6 0l3.03-3.03-4.6-4.6-3.06 3Z"/><path d="M20.49 3.51A11.95 11.95 0 0 0 12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12c0-3.18-1.24-6.2-3.51-8.49ZM12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10Z"/></svg>
+  Apoiar via PIX
+</button>
+
+<!-- ═══════════ Rodapé ═══════════ -->
+<footer style="
+  margin-top:40px;
+  padding:20px 0;
+  text-align:center;
+  border-top:1px solid rgba(255,255,255,0.07);
+  color:rgba(255,255,255,0.4);
+  font-size:13px;
+  font-family:inherit;
+">
+  Feito com <span style="color:#e53935;">❤️</span> por
+  <a href="https://github.com/gunsleobezerra" target="_blank" rel="noopener" style="
+    color:rgba(255,255,255,0.7);
+    text-decoration:none;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    transition:color .2s;
+  " onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z"/></svg>
+    gunsleobezerra
+  </a>
+</footer>
+
+<style>
+  @keyframes fadeInOverlay { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  #pix-modal-overlay { display:none; }
+  #pix-modal-overlay.open { display:flex !important; }
+</style>
+
+<script>
+  function abrirPix(){
+    const m = document.getElementById('pix-modal-overlay');
+    m.style.display = 'flex';
+    void m.offsetWidth;
+    m.classList.add('open');
+  }
+  function fecharPix(){
+    const m = document.getElementById('pix-modal-overlay');
+    m.classList.remove('open');
+    setTimeout(()=>{ m.style.display='none'; }, 200);
+  }
+  document.addEventListener('keydown', e => { if(e.key==='Escape') fecharPix(); });
+</script>
+
 </body>
 </html>
