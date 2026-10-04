@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apuração TSE 2026 — ao vivo</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --bg3:#1c2128; --bd:#30363d; --bd2:#3d444d;
+    --fg:#e6edf3; --fg2:#9198a1; --fg3:#6e7681;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149; --acc:#58a6ff;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--fg); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:20px; max-width:1440px; margin:0 auto;
+  }
+  header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:19px;font-weight:600;letter-spacing:-.2px}
+  .sub{color:var(--fg2);font-size:12.5px;margin-top:3px}
+  .sub b{color:var(--fg);font-weight:600}
+
+  /* ── seletor cargo/UF ── */
+  .selector{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    background:var(--bg2);border:1px solid var(--bd);border-radius:9px;
+    padding:12px 14px;margin-bottom:16px;
+  }
+  .selgroup{display:flex;align-items:center;gap:7px}
+  .sellabel{color:var(--fg3);font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  button,select,input[type=text]{
+    background:var(--bg3);color:var(--fg);border:1px solid var(--bd2);
+    padding:7px 11px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;
+    transition:background .12s,border-color .12s;
+  }
+  select:hover,input[type=text]:hover,button:hover{background:#262c33;border-color:#525a63}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:#1f6feb;border-color:#1f6feb;color:#fff;font-weight:500}
+  button.primary:hover{background:#2f7ff0}
+  button.danger:hover{background:#3d1d1d;border-color:var(--bad);color:#ff8b82}
+  button.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+  .divider{width:1px;align-self:stretch;background:var(--bd);margin:0 2px}
+
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+    background:var(--bg3);border:1px solid var(--bd);font-size:12px;color:var(--fg2);white-space:nowrap;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--fg3);flex-shrink:0}
+  .dot.live{background:var(--ok);animation:pulse 2s infinite}
+  .dot.wait{background:var(--warn);animation:blink 1.2s infinite}
+  .dot.err{background:var(--bad)}
+  @keyframes pulse{70%{box-shadow:0 0 0 7px rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
+  @keyframes blink{50%{opacity:.3}}
+
+  .banner{padding:11px 15px;border-radius:7px;margin-bottom:16px;font-size:13px;border:1px solid}
+  .banner.info{background:#0d2b1e;border-color:#1f6f43;color:#7ee2a8}
+  .banner.warn{background:#2b2410;border-color:#8a6d1f;color:#e3c168}
+  .banner.err {background:#2d1416;border-color:#8b2b28;color:#ff9d94}
+  .banner[hidden]{display:none}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:16px}
+  .stat{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px}
+  .stat .lbl{color:var(--fg3);font-size:11px;text-transform:uppercase;letter-spacing:.55px;font-weight:600}
+  .stat .val{font-size:21px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.5px;
+             display:flex;align-items:center;gap:7px}
+  .stat .val.sm{font-size:16px}
+  .stat .val .ph{width:20px;height:20px;border-radius:50%;object-fit:cover;background:var(--bg3);flex-shrink:0}
+  .stat .foot{color:var(--fg3);font-size:11.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+
+  .card{background:var(--bg2);border:1px solid var(--bd);border-radius:9px;margin-bottom:16px;overflow:hidden}
+  .card>header{padding:11px 15px;border-bottom:1px solid var(--bd);display:flex;
+    justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg3)}
+  .card h2{font-size:13.5px;font-weight:600;letter-spacing:-.1px}
+  .card .note{color:var(--fg3);font-size:11.5px}
+  .body{padding:14px 15px}
+
+  .chartwrap{position:relative;width:100%;height:360px}
+  canvas{display:block;width:100%;height:100%}
+
+  #tip{
+    position:absolute;pointer-events:none;opacity:0;transition:opacity .1s;
+    background:rgba(13,17,23,.98);border:1px solid var(--bd2);border-radius:7px;
+    padding:9px 11px;font-size:12px;z-index:20;min-width:200px;
+    box-shadow:0 6px 22px rgba(0,0,0,.55);
+  }
+  #tip .t{color:var(--fg2);font-size:11px;margin-bottom:6px;font-variant-numeric:tabular-nums}
+  #tip .row{display:flex;align-items:center;gap:7px;padding:2px 0;font-variant-numeric:tabular-nums}
+  #tip .ph{width:20px;height:20px;border-radius:50%;object-fit:cover;background:var(--bg3);flex-shrink:0}
+  #tip .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  #tip .nm{flex:1;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #tip .vv{font-family:var(--mono);font-size:11.5px;color:var(--fg)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px;padding:11px 15px;border-top:1px solid var(--bd);
+          background:#11161d;max-height:160px;overflow-y:auto}
+  .lg{display:flex;align-items:center;gap:6px;padding:3px 9px;border-radius:5px;font-size:11.5px;
+      background:var(--bg3);border:1px solid transparent;cursor:pointer;user-select:none;transition:.12s}
+  .lg:hover{border-color:var(--bd2)}
+  .lg.off{opacity:.35}
+  .lg .ph{width:18px;height:18px;border-radius:50%;object-fit:cover;background:var(--bg3);flex-shrink:0}
+  .lg .sw{width:9px;height:9px;border-radius:2px}
+  .lg .n{color:var(--fg3);font-size:11px}
+
+  .split{display:grid;grid-template-columns:1fr 340px;gap:16px}
+  @media(max-width:1000px){.split{grid-template-columns:1fr}}
+
+  .bar{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:12.5px}
+  .bar .nm{width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+  .bar .track{flex:1;height:17px;background:var(--bg3);border-radius:3px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+  .bar .pct{width:76px;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--fg2);
+            font-variant-numeric:tabular-nums;flex-shrink:0;overflow:hidden}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:right;padding:8px 10px;color:var(--fg3);font-size:10.5px;font-weight:600;
+      text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);
+      position:sticky;top:0;background:var(--bg3);white-space:nowrap;z-index:2}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:6px 10px;border-bottom:1px solid #21262d;text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:#171d24}
+  tbody tr.me{background:#141d2b}
+  td.num{font-family:var(--mono)}
+  .pos{display:inline-block;width:17px;height:17px;line-height:17px;text-align:center;
+       border-radius:4px;background:var(--bg3);color:var(--fg3);font-size:10.5px;font-weight:600}
+  .pos.g1{background:#3d3520;color:#e3c168}
+  .pos.g2{background:#232c38;color:#8ab4f8}
+  .cand{display:flex;align-items:center;gap:9px}
+  .cand .ph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--bg3);
+            flex-shrink:0;border:1px solid var(--bd)}
+  .cand .ph.fallback{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+  .cand .sq{width:3px;height:30px;border-radius:2px;flex-shrink:0}
+  .cand .nm{line-height:1.25}
+  .cand .vp{color:var(--fg3);font-size:11px}
+  .delta{font-size:11px;font-family:var(--mono)}
+  .delta.up{color:#7ee2a8}.delta.flat{color:var(--fg3)}.delta.dn{color:#ff9d94}
+  .scroll{max-height:460px;overflow-y:auto}
+  .scroll::-webkit-scrollbar{width:9px}
+  .scroll::-webkit-scrollbar-track{background:var(--bg2)}
+  .scroll::-webkit-scrollbar-thumb{background:#30363d;border-radius:5px}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--bd)}
+  input[type=text]{cursor:text;flex:1;min-width:150px}
+  input[type=text]::placeholder{color:var(--fg3)}
+  .fcount{color:var(--fg3);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  footer{color:var(--fg3);font-size:11.5px;text-align:center;margin-top:24px;line-height:1.7}
+  footer b{color:var(--fg2)}
+  .empty{color:var(--fg3);font-size:13px;text-align:center;padding:40px 20px}
+  .loading{display:inline-block;width:12px;height:12px;border:2px solid var(--bd2);
+           border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:640px){
+    body{padding:12px}
+    h1{font-size:16px}
+    .controls{width:100%}
+    .controls select{flex:1;min-width:0}
+    .selector{gap:8px}
+    .selgroup{flex:1;min-width:0}
+    .selgroup select{flex:1;min-width:0}
+    .sellabel{display:none}
+    .divider{display:none}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat .val{font-size:18px}
+    .card>header{padding:9px 12px}
+    .body{padding:10px 11px}
+    .chartwrap{height:250px}
+    .split{grid-template-columns:1fr}
+    table{font-size:12px}
+    th,td{padding:6px 5px}
+    th:nth-child(2),td:nth-child(2),
+    th:nth-child(5),td:nth-child(5),
+    th:nth-child(6),td:nth-child(6){display:none}
+    td:first-child,th:first-child{padding-left:2px}
+    .cand .ph{width:28px;height:28px}
+    .pos{width:15px;height:15px;line-height:15px;font-size:10px}
+    .scroll{max-height:none}
+    .bar .nm{width:84px}
+    .bar .pct{min-width:46px;padding-left:5px}
+    .bar .track{flex:1 1 auto;min-width:0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="ttl">Apuração — 2026</h1>
+    <div class="sub" id="subtitle">carregando…</div>
+  </div>
+  <div class="controls">
+    <span class="pill"><span class="dot" id="dot"></span><span id="status">iniciando…</span></span>
+    <select id="interval" title="Intervalo entre coletas">
+      <option value="15">a cada 15 s</option>
+      <option value="30">a cada 30 s</option>
+      <option value="60" selected>a cada 1 min</option>
+      <option value="120">a cada 2 min</option>
+      <option value="300">a cada 5 min</option>
+      <option value="900">a cada 15 min</option>
+    </select>
+    <button class="primary" id="toggle">▶ Iniciar</button>
+    <button id="once">Coletar agora</button>
+    <button id="csv">CSV</button>
+    <button class="danger" id="clear">Limpar</button>
+  </div>
+</header>
+
+<div class="selector">
+  <div class="selgroup">
+    <span class="sellabel">Cargo</span>
+    <select id="cargo"></select>
+  </div>
+  <div class="divider"></div>
+  <div class="selgroup">
+    <span class="sellabel">UF</span>
+    <select id="uf"></select>
+  </div>
+  <div class="divider"></div>
+  <div class="selgroup">
+    <span class="sellabel">Curvas</span>
+    <select id="topn" title="Quantas curvas mostrar no gráfico">
+      <option value="5">top 5</option>
+      <option value="10">top 10</option>
+      <option value="12" selected>top 12</option>
+      <option value="20">top 20</option>
+      <option value="30">top 30</option>
+      <option value="99999">todas</option>
+    </select>
+  </div>
+  <div class="divider"></div>
+  <div class="selgroup">
+    <span class="sellabel">Fotos</span>
+    <button id="fotos" class="on">ligadas</button>
+  </div>
+  <div class="divider"></div>
+  <div class="selgroup">
+    <button id="todas">Ver todos os estados</button>
+  </div>
+  <div class="divider"></div>
+  <div class="selgroup">
+    <button id="demo" title="Popula a página com dados fictícios para ver como o painel fica quando a apuração estiver rodando. Não altera o histórico real.">Ver exemplo</button>
+  </div>
+</div>
+
+<div class="banner warn" id="demobanner" hidden>
+  <div style="flex:1"><b>MODO EXEMPLO — dados fictícios.</b> Não são números do TSE.
+  Sirvem só para você ver o painel preenchido enquanto a apuração real não começa.</div>
+  <button id="demoexit">voltar ao real</button>
+</div>
+
+<div class="banner info" id="banner" hidden></div>
+<div id="matrix"></div>
+
+<div class="stats" id="stats"></div>
+
+<div class="card">
+  <header>
+    <h2>Evolução dos votos</h2>
+    <div class="note" id="chartnote">acumulado · escala linear · clique na legenda para ocultar</div>
+  </header>
+  <div class="body">
+    <div class="chartwrap">
+      <canvas id="chart"></canvas>
+      <div id="tip"></div>
+    </div>
+  </div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="split">
+  <div class="card">
+    <header>
+      <h2>Contagem</h2>
+      <div class="note" id="tablenote"></div>
+    </header>
+    <div class="filters">
+      <input type="text" id="fsearch" placeholder="filtrar por nome, número ou partido… (ex.: lula, 22, PT)">
+      <button id="fclear">limpar</button>
+      <span class="fcount" id="fcount"></span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th class="l">Candidato</th><th>#</th><th>Votos</th>
+          <th>%</th><th>Δ última</th><th class="l">Barras</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <header><h2>Distribuição</h2><div class="note">% sobre a soma dos candidatos exibidos</div></header>
+    <div class="body" id="dist"></div>
+  </div>
+</div>
+
+<footer>
+  Dados públicos do Tribunal Superior Eleitoral, coletados por leitura direta dos arquivos JSON de apuração.<br>
+  Não é fonte oficial de resultado — consulte <b>resultados.tse.jus.br</b> para os números oficiais.
+</footer>
+
+<script>
+"use strict";
+
+/* ═══════════════ configuração ═══════════════ */
+const HOST   = "https://resultados.tse.jus.br/oficial";
+const CICLO  = "ele2026";
+const LS_KEY = "tse-2026-apuracao-v2";
+const MAX_POINTS = 2000;
+const ELE_FED = "6257", ELE_EST = "6259";
+
+const UFS = [
+  ["br","Brasil (nacional)"],["ac","Acre"],["al","Alagoas"],["am","Amazonas"],
+  ["ap","Amapá"],["ba","Bahia"],["ce","Ceará"],["df","Distrito Federal"],
+  ["es","Espírito Santo"],["go","Goiás"],["ma","Maranhão"],["mg","Minas Gerais"],
+  ["ms","Mato Grosso do Sul"],["mt","Mato Grosso"],["pa","Pará"],["pb","Paraíba"],
+  ["pe","Pernambuco"],["pi","Piauí"],["pr","Paraná"],["rj","Rio de Janeiro"],
+  ["rn","Rio Grande do Norte"],["ro","Rondônia"],["rr","Roraima"],["rs","Rio Grande do Sul"],
+  ["sc","Santa Catarina"],["se","Sergipe"],["to","Tocantins"],["sp","São Paulo"]
+];
+const UFS_EST = UFS.map(u=>u[0]).filter(u=>u!=="br");
+
+const CARGOS = [
+  { id:"fed0001", ele:ELE_FED, cargo:"0001", nome:"Presidente",        ufs:["br"] },
+  { id:"est0003", ele:ELE_EST, cargo:"0003", nome:"Governador",         ufs:UFS_EST },
+  { id:"est0005", ele:ELE_EST, cargo:"0005", nome:"Senador Estadual",   ufs:UFS_EST },
+  { id:"est0006", ele:ELE_EST, cargo:"0006", nome:"Deputado Federal",   ufs:UFS_EST },
+  { id:"est0007", ele:ELE_EST, cargo:"0007", nome:"Deputado Estadual",  ufs:UFS_EST.filter(u=>u!=="df") },
+  { id:"est0008", ele:ELE_EST, cargo:"0008", nome:"Deputado Distrital", ufs:["df"] }
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf  = new Intl.NumberFormat("pt-BR");
+const nf2 = new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const num = s => Number(String(s??0).replace(/\./g,"").replace(",","."))||0;
+const pctf = s => String(s??"0,00").replace(",",".");
+const fmtT = ms => { const d=new Date(ms); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+const fmtDT = ms => { const d=new Date(ms); return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+" "+fmtT(ms); };
+const ufNome = c => (UFS.find(u=>u[0]===c)||[,c])[1];
+
+const state = {
+  cargoId:"fed0001", uf:"br",
+  running:false, timer:null, busy:false,
+  points:[], cands:{}, last:null, lastErr:null,
+  hidden:new Set(), search:"", photos:true, topN:12,
+  storageKey:"",
+};
+
+const cfg = () => CARGOS.find(c=>c.id===state.cargoId) || CARGOS[0];
+const pad6 = n => String(n).padStart(6,"0");
+const dataUrl  = () => `${HOST}/${CICLO}/${cfg().ele}/dados/${state.uf}/${state.uf}-c${cfg().cargo}-e${pad6(cfg().ele)}-u.json`;
+const photoUrl = sq => `${HOST}/${CICLO}/${cfg().ele}/fotos/${state.uf}/${sq}.jpeg`;
+
+/* ═══════════════ persistência ═══════════════ */
+function save(){
+  try{
+    localStorage.setItem(state.storageKey, JSON.stringify({v:2, points:state.points.slice(-MAX_POINTS)}));
+    localStorage.setItem(state.storageKey+"|c", JSON.stringify(state.cands));
+  }catch(e){}
+}
+function load(){
+  state.points=[]; state.cands={}; state.last=null;
+  try{
+    const r=localStorage.getItem(state.storageKey);
+    if(r){ const o=JSON.parse(r); if(o&&Array.isArray(o.points)) state.points=o.points; }
+    const c=localStorage.getItem(state.storageKey+"|c");
+    if(c) state.cands=JSON.parse(c);
+  }catch(e){}
+}
+
+/* ═══════════════ coleta ═══════════════ */
+async function collect(manual){
+  if(state.busy) return;
+  if(demo.on && !manual) return;   /* não sobrescreve o exemplo com coleta real */
+  state.busy=true;
+  const myKey=state.storageKey;
+  setStatus("wait","coletando…");
+  $("once").disabled=true;
+
+  try{
+    const ctrl=new AbortController();
+    const to=setTimeout(()=>ctrl.abort(),30000);
+    const res=await fetch(dataUrl()+"?nocache="+Date.now(), {cache:"no-store", signal:ctrl.signal});
+    clearTimeout(to);
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const j=await res.json();
+
+    /* usuário trocou de cargo/UF durante o fetch — descarta o resultado */
+    if(state.storageKey!==myKey){ state.busy=false; $("once").disabled=false; return; }
+
+    const v=j.v||{}, s=j.s||{}, e=j.e||{};
+    const cands={};
+    const rows=[];
+    for(const agr of (j.carg?.[0]?.agr||[])){
+      for(const par of (agr.par||[])){
+        for(const c of (par.cand||[])){
+          const n=String(c.n);
+          cands[n]={
+            n,
+            nome:c.nmu||c.nm||n,
+            nomeFull:c.nm||c.nmu||n,
+            part:par.sg||agr.com||"",
+            sq:c.sqcand||null,
+            vice:(c.vs?.[0]?.nmu||c.vs?.[0]?.nm||"")+(c.vs?.[0]?.sgp?" ("+c.vs[0].sgp+")":""),
+            photo:null,
+          };
+          rows.push({n, v:num(c.vap), p:pctf(c.pvap)});
+        }
+      }
+    }
+    for(const n in cands) cands[n].photo = cands[n].sq ? photoUrl(cands[n].sq) : null;
+
+    const pt={
+      t:Date.now(), dg:j.dg||"", hg:j.hg||"", idg:j.idg||"",
+      vv:num(v.vv), vvn:num(v.vvn), vb:num(v.vb), van:num(v.van),
+      vnom:num(v.vnom), vsan:num(v.vsan), vscv:num(v.vscv), tv:num(v.tv),
+      st:num(s.st), si:num(s.si), ts:num(s.ts),
+      te:num(e.te),
+      apur:(s.st&&s.ts)?s.st/s.ts*100:null,
+      c:{}
+    };
+    for(const r of rows) pt.c[r.n]={v:r.v, p:r.p};
+
+    const prev=state.points[state.points.length-1];
+    if(prev && prev.idg && prev.idg===pt.idg && !manual){
+      state.busy=false; $("once").disabled=false;
+      setStatus("live","sem novidade");
+      return;
+    }
+    if(prev) for(const k in pt.c) pt.c[k].d = pt.c[k].v - ((prev.c[k]?.v)||0);
+
+    state.points.push(pt);
+    if(state.points.length>MAX_POINTS) state.points.shift();
+    state.last=pt;
+    state.cands=cands;
+    state.lastErr=null;
+    save();
+
+    setStatus("live", state.points.some(p=>p.vv>0) ? "ao vivo" : "apuração não iniciou");
+    render();
+  }catch(err){
+    const msg = err?.name==="AbortError" ? "tempo esgotado (30 s)" : String(err.message||err);
+    state.lastErr=msg;
+    setStatus("err","falha: "+msg);
+    render();
+  }finally{
+    state.busy=false; $("once").disabled=false;
+  }
+}
+
+/* ═══════════════ status / banner ═══════════════ */
+function setStatus(k,t){ $("dot").className="dot"+(k==="live"?" live":k==="wait"?" wait":k==="err"?" err":""); $("status").textContent=t; }
+function showBanner(k,html){ const b=$("banner"); b.className="banner "+k; b.innerHTML=html; b.hidden=false; }
+function hideBanner(){ $("banner").hidden=true; }
+
+/* ═══════════════ cores / fotos ═══════════════ */
+function colorOf(n){
+  let h=0; const s=String(n);
+  for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0;
+  return `hsl(${Math.abs(h)%360} 64% 58%)`;
+}
+function initials(nome){
+  const p=String(nome||"").trim().split(/\s+/).filter(w=>w.length>2);
+  if(!p.length) return (nome||"?")[0].toUpperCase();
+  if(p.length===1) return p[0].slice(0,2).toUpperCase();
+  return (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+/* <img> com fallback para iniciais coloridas.
+   Usa um único listener global em vez de onerror inline com HTML embutido
+   (a versão com replace() injetava aspas no atributo e quebrava a tabela). */
+function faceHTML(c, size){
+  const ini=initials(c.nome);
+  const bg=c.num?`${colorOf(c.num)}22`:"#1c2128";
+  const fg=c.num?colorOf(c.num):"#6e7681";
+  if(!state.photos || !c.photo){
+    return `<span class="ph fallback" style="width:${size}px;height:${size}px;background:${bg};color:${fg}">${ini}</span>`;
+  }
+  return `<img class="ph" src="${esc(c.photo)}" width="${size}" height="${size}" alt="" loading="lazy"
+    data-ini="${esc(ini)}" data-bg="${esc(bg)}" data-fg="${esc(fg)}">`;
+}
+/* listener único para todas as fotos que falharem */
+document.addEventListener("error", e=>{
+  const el=e.target;
+  if(!(el instanceof HTMLImageElement) || !el.classList.contains("ph")) return;
+  const s=document.createElement("span");
+  s.className="ph fallback";
+  s.style.width=el.width+"px"; s.style.height=el.height+"px";
+  s.style.background=el.dataset.bg||"#1c2128";
+  s.style.color=el.dataset.fg||"#6e7681";
+  s.textContent=el.dataset.ini||"?";
+  el.replaceWith(s);
+}, true);
+
+function ranked(){
+  const L=state.last;
+  if(!L) return [];
+  return Object.keys(L.c).map(n=>{
+    const d=L.c[n], i=state.cands[n]||{};
+    return {num:n, v:d.v, p:parseFloat(String(d.p).replace(",","."))||0, d:d.d||0,
+            nome:i.nome||n, nomeFull:i.nomeFull||"", part:i.part||"", vice:i.vice||"", photo:i.photo||null};
+  }).sort((a,b)=>b.v-a.v);
+}
+
+/* ═══════════════ render ═══════════════ */
+function render(){
+  const c=cfg(), ufn=ufNome(state.uf);
+  $("ttl").textContent=`Apuração — ${c.nome} · ${ufn} · 2026 1º turno`;
+  $("subtitle").innerHTML=`${esc(ufn)} · cargo <b>${esc(c.nome)}</b> · eleição <b>${c.ele}</b> · ciclo <b>${CICLO}</b> · fonte <b>resultados.tse.jus.br</b>`;
+
+  const L=state.last;
+  if(demo.on){
+    hideBanner();
+  } else if(state.lastErr){
+    showBanner("err","Última coleta falhou: <b>"+esc(state.lastErr)+"</b>. Os dados abaixo são do último horário com sucesso.");
+  } else if(L && !state.points.some(p=>p.vv>0)){
+    const fim=new Date(2026,9,4,17,0,0).getTime();
+    if(Date.now()<fim){
+      showBanner("info","<div><b>As urnas estão abertas.</b> Votação das 07h às 17h (BRT). O TSE não divulga parciais em tempo real — a apuração só publica depois do fechamento das urnas. Esta página coleta sozinha e o gráfico começa a subir assim que o resultado sair.</div>");
+    } else {
+      showBanner("warn",`<div><b>Resultado ainda não disponível para ${esc(c.nome)} — ${esc(ufn)}.</b> O arquivo do TSE está sem votos`+
+        (L.dg?` (gerado em ${L.dg} às ${L.hg})`:"")+`. Costuma ser atraso do TSE na apuração. Seguindo coletando.</div>`);
+    }
+  } else hideBanner();
+
+  renderStats(); drawChart(); renderLegend(); renderTable(); renderDist(); renderMeta();
+}
+
+function renderStats(){
+  const L=state.last, box=$("stats");
+  if(!L){ box.innerHTML=`<div class="empty" style="grid-column:1/-1">Nenhum dado ainda. Clique em <b>Coletar agora</b>.</div>`; return; }
+  const pts=state.points;
+  const growth=(()=>{
+    if(pts.length<2) return null;
+    const a=pts[Math.max(0,pts.length-6)], b=pts[pts.length-1];
+    const dt=(b.t-a.t)/60000;
+    return (dt>0 && b.vv!==a.vv)?((b.vv-a.vv)/dt):null;
+  })();
+  const rs=ranked(), r1=rs[0], r2=rs[1];
+  const lead = r1
+    ? (state.photos && r1.photo
+        ? faceHTML(r1,20)
+        : "") + esc(r1.nome) + (r1.part?` · ${esc(r1.part)}`:"")
+    : "—";
+
+  const cards=[
+    {l:"Votos válidos", v:nf.format(L.vv), f:`${nf2.format(L.tv?L.vv/L.tv*100:0)}% do total`},
+    {l:"Nulos", v:nf.format(L.vvn), f:L.vvn&&L.tv?nf2.format(L.vvn/L.tv*100)+"% do total":"—"},
+    {l:"Brancos", v:nf.format(L.vb), f:L.vb&&L.tv?nf2.format(L.vb/L.tv*100)+"% do total":"—"},
+    {l:"Total de votos", v:nf.format(L.tv), f:`${nf.format(L.st)}/${nf.format(L.ts)} seções`},
+    {l:"Seções apuradas", v:L.apur!=null?nf2.format(L.apur)+"%":"—", f:`${nf.format(L.st)} de ${nf.format(L.ts)}`},
+    {l:"Eleitorado", v:nf.format(L.te), f:L.te>0?"não contados: "+nf.format(Math.max(0,L.te-L.tv)):"—"},
+    {l:"Liderança", v:lead, f:r2?`${nf2.format(r1.p)}% · ${nf2.format(r2.p)}% · folga ${nf2.format(r1.p-r2.p)} p.p.`:"", html:true},
+    {l:"Candidatos", v:nf.format(Object.keys(L.c).length), f:"no cargo"},
+    {l:"Ritmo", v:growth!=null?nf.format(Math.round(growth)):"—", f:growth!=null?"votos/min (últimos 5 pontos)":"sem dados suficientes"},
+  ];
+  box.innerHTML=cards.map(c=>{
+    const val = c.html?c.v:esc(c.v);
+    return `<div class="stat"><div class="lbl">${c.l}</div>
+      <div class="val ${val.replace(/<[^>]+>/g,"").length>13?"sm":""}">${val}</div>
+      <div class="foot">${c.f||"&nbsp;"}</div></div>`;
+  }).join("");
+}
+
+/* ═══════════════ gráfico ═══════════════ */
+const cv=$("chart"), ctx=cv.getContext("2d");
+let geom=null, hoverX=null;
+
+function resize(){
+  const dpr=window.devicePixelRatio||1, r=cv.getBoundingClientRect();
+  cv.width=Math.max(1,Math.floor(r.width*dpr));
+  cv.height=Math.max(1,Math.floor(r.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawChart();
+}
+
+function drawChart(){
+  const W=cv.clientWidth, H=cv.clientHeight;
+  ctx.clearRect(0,0,W,H);
+  const pts=state.points;
+
+  if(pts.length<2){
+    ctx.fillStyle="#6e7681"; ctx.font="13px -apple-system,sans-serif"; ctx.textAlign="center";
+    ctx.fillText(pts.length===0?"Nenhuma coleta ainda.":"Uma coleta feita — são necessários 2 pontos para desenhar a linha.",W/2,H/2);
+    geom=null; return;
+  }
+
+  const pad={t:14,r:14,b:26,l:62};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  if(pw<=10||ph<=10){ geom=null; return; }
+
+  const rs=ranked().filter(r=>!state.hidden.has(r.num));
+  const series=rs.slice(0,state.topN)
+    .map(r=>({num:r.num,nome:r.nome,
+      pts:pts.map(p=>({t:p.t,v:(p.c[r.num]?.v)||0})).filter(q=>q.v>0)}))
+    .filter(s=>s.pts.length>0);
+
+  if(!series.length){
+    ctx.fillStyle="#6e7681"; ctx.font="13px -apple-system,sans-serif"; ctx.textAlign="center";
+    ctx.fillText("Nenhum candidato registrou votos ainda.",W/2,H/2);
+    geom=null; return;
+  }
+
+  const t0=pts[0].t, t1=Math.max(pts[pts.length-1].t,t0+60000);
+  const vmax=Math.max(...series.flatMap(s=>s.pts.map(q=>q.v)),1);
+  const yTop=niceCeil(vmax);
+  const X=t=>pad.l+((t-t0)/(t1-t0))*pw;
+  const Y=v=>pad.t+ph-(v/yTop)*ph;
+  geom={pad,pw,ph,X,Y,t0,t1,yTop,series,W,H};
+
+  ctx.font="11px ui-monospace,monospace"; ctx.textBaseline="middle";
+  for(let i=0;i<=5;i++){
+    const val=yTop*i/5, y=Y(val);
+    ctx.strokeStyle="#21262d"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l,Math.round(y)+.5); ctx.lineTo(W-pad.r,Math.round(y)+.5); ctx.stroke();
+    ctx.fillStyle="#6e7681"; ctx.textAlign="right";
+    ctx.fillText(compact(val),pad.l-8,y);
+  }
+
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  const span=t1-t0;
+  const maxTicks=Math.max(2,Math.min(6,Math.floor(pw/74)));
+  for(let i=0;i<=maxTicks;i++){
+    const t=t0+(t1-t0)*i/maxTicks, x=X(t);
+    ctx.strokeStyle="#21262d";
+    ctx.beginPath(); ctx.moveTo(Math.round(x)+.5,pad.t); ctx.lineTo(Math.round(x)+.5,pad.t+ph); ctx.stroke();
+    ctx.fillStyle="#6e7681";
+    const lbl=span<=24*3600e3?fmtT(t):fmtDT(t);
+    const half=ctx.measureText(lbl).width/2+3;
+    ctx.fillText(lbl,Math.min(Math.max(x,pad.l+half),W-pad.r-half),pad.t+ph+7);
+  }
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(pad.l,pad.t-2,pw,ph+4); ctx.clip();
+  ctx.lineJoin="round"; ctx.lineCap="round";
+  for(const s of series){
+    ctx.strokeStyle=colorOf(s.num); ctx.lineWidth=2;
+    ctx.beginPath();
+    s.pts.forEach((q,i)=> i?ctx.lineTo(X(q.t),Y(q.v)):ctx.moveTo(X(q.t),Y(q.v)));
+    ctx.stroke();
+    const last=s.pts[s.pts.length-1];
+    ctx.fillStyle=colorOf(s.num);
+    ctx.beginPath(); ctx.arc(X(last.t),Y(last.v),3.2,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  if(hoverX!=null && hoverX>=pad.l && hoverX<=W-pad.r){
+    const t=t0+((hoverX-pad.l)/pw)*(t1-t0);
+    let near=pts[0], bd=Infinity;
+    for(const p of pts){ const d=Math.abs(p.t-t); if(d<bd){bd=d;near=p;} }
+    const x=X(near.t);
+    ctx.strokeStyle="#58a6ff"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(Math.round(x)+.5,pad.t); ctx.lineTo(Math.round(x)+.5,pad.t+ph); ctx.stroke();
+    ctx.setLineDash([]);
+    for(const s of series){
+      const q=s.pts.reduce((a,b)=>Math.abs(b.t-near.t)<Math.abs(a.t-near.t)?b:a);
+      ctx.fillStyle=colorOf(s.num);
+      ctx.beginPath(); ctx.arc(x,Y(q.v),4,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle="#0d1117"; ctx.lineWidth=1.6; ctx.stroke();
+    }
+    showTip(near,x);
+  } else hideTip();
+}
+
+function showTip(pt,x){
+  const tip=$("tip");
+  const rows=ranked()
+    .map(r=>({num:r.num,nome:r.nome,part:r.part,photo:r.photo,v:(pt.c[r.num]?.v)||0}))
+    .filter(r=>!state.hidden.has(r.num))
+    .sort((a,b)=>b.v-a.v).slice(0,12);
+  tip.innerHTML=`<div class="t">${fmtDT(pt.t)} · ${nf.format(pt.vv)} válidos</div>`+
+    rows.map(r=>{
+      const face = (state.photos && r.photo) ? faceHTML(r,20)
+        : `<span class="sw" style="background:${colorOf(r.num)}"></span>`;
+      return `<div class="row">${face}<span class="nm">${esc(r.nome)} <span style="color:#6e7681">${esc(r.part)}</span></span><span class="vv">${nf.format(r.v)}</span></div>`;
+    }).join("");
+  tip.style.opacity=1;
+  const W=cv.clientWidth, tw=tip.offsetWidth;
+  let left=x+14;
+  if(left+tw>W-4) left=x-tw-14;
+  tip.style.left=Math.max(4,left)+"px";
+  tip.style.top="14px";
+}
+function hideTip(){ $("tip").style.opacity=0; }
+
+cv.addEventListener("mousemove",e=>{ hoverX=e.clientX-cv.getBoundingClientRect().left; drawChart(); });
+cv.addEventListener("mouseleave",()=>{ hoverX=null; hideTip(); drawChart(); });
+
+function niceCeil(v){
+  if(v<=0) return 1;
+  const mag=Math.pow(10,Math.floor(Math.log10(v))), n=v/mag;
+  return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+}
+function compact(v){
+  if(v>=1e8) return nf2.format(v/1e8)+"e8";
+  if(v>=1e6) return nf2.format(v/1e6)+"M";
+  if(v>=1e3) return nf2.format(v/1e3)+"k";
+  return nf.format(v);
+}
+
+/* ═══════════════ legenda ═══════════════ */
+function renderLegend(){
+  const rs=ranked();
+  $("legend").innerHTML=rs.slice(0,state.topN).map(r=>`
+    <div class="lg ${state.hidden.has(r.num)?"off":""}" data-num="${r.num}"
+         title="${esc(r.nomeFull)}${r.vice?" — vice: "+esc(r.vice):""}">
+      ${state.photos
+        ? (r.photo?faceHTML(r,18):`<span class="sw" style="background:${colorOf(r.num)}"></span>`)
+        : `<span class="sw" style="background:${colorOf(r.num)}"></span>`}
+      <span>${esc(r.nome)}</span><span class="n">${esc(r.part)}</span>
+    </div>`).join("");
+}
+$("legend").addEventListener("click",e=>{
+  const el=e.target.closest(".lg"); if(!el) return;
+  const n=el.dataset.num;
+  state.hidden.has(n)?state.hidden.delete(n):state.hidden.add(n);
+  renderLegend(); drawChart(); renderTable(); renderDist();
+});
+
+/* ═══════════════ tabela + filtro ═══════════════ */
+function filterRows(){
+  const q=state.search.trim().toLowerCase();
+  let rs=ranked();
+  if(q){
+    /* sigla de partido casa exata ("PT" não pega "PTdoB" nem "resPETiu") */
+    const siglaExata = /^[a-z]{1,12}$/i.test(state.search.trim()) &&
+                       rs.some(r=>r.part.toLowerCase()===q);
+    rs=rs.filter(r=>{
+      if(siglaExata && r.part.toLowerCase()===q) return true;
+      return r.nome.toLowerCase().includes(q)
+          || r.nomeFull.toLowerCase().includes(q)
+          || r.part.toLowerCase().includes(q)
+          || r.num.includes(q);
+    });
+    rs.sort((a,b)=>{
+      const am=a.num===q?1:0, bm=b.num===q?1:0;   /* número exato tem prioridade */
+      if(am!==bm) return bm-am;
+      const ap=a.part.toLowerCase()===q?1:0, bp=b.part.toLowerCase()===q?1:0;
+      if(ap!==bp) return bp-ap;
+      return b.v-a.v;
+    });
+  }
+  return rs;
+}
+
+function renderTable(){
+  const L=state.last, tb=$("tbody");
+  if(!L){ tb.innerHTML=`<tr><td colspan="6" class="empty">sem dados</td></tr>`; $("fcount").textContent=""; $("tablenote").textContent=""; return; }
+  const all=ranked();
+  const rows=filterRows();
+  const pts=state.points, prev=pts.length>1?pts[pts.length-2]:null;
+  const maxV=Math.max(...all.map(r=>r.v),1);
+
+  $("tablenote").textContent=`${nf.format(all.length)} candidato${all.length!==1?"s":""} · % do TSE${prev?" · var. vs. "+fmtT(prev.t):""}`;
+  $("fcount").textContent = state.search
+    ? `${nf.format(rows.length)} de ${nf.format(all.length)}`
+    : (all.length>200 ? "" : "");
+
+  if(!rows.length){
+    tb.innerHTML=`<tr><td colspan="6" class="empty">nenhum candidato casa com “${esc(state.search)}”</td></tr>`;
+    return;
+  }
+
+  const LIMIT=300;
+  const slice=rows.slice(0,LIMIT);
+  tb.innerHTML=slice.map((r,i)=>{
+    const d=prev?r.v-((prev.c[r.num]?.v)||0):null;
+    const dcls=d==null||d===0?"flat":d>0?"up":"dn";
+    const dtxt=d==null?"—":d===0?"±0":(d>0?"+":"")+nf.format(d);
+    return `<tr class="${i<2?"me":""}">
+      <td class="l"><div class="cand">
+        ${faceHTML(r,34)}
+        <div><div class="nm">${esc(r.nome)}${r.vice?`<div class="vp">vp. ${esc(r.vice)}</div>`:""}</div></div>
+      </div></td>
+      <td><span class="pos ${i===0?"g1":i===1?"g2":""}">${i+1}</span></td>
+      <td class="num">${nf.format(r.v)}</td>
+      <td class="num">${nf2.format(r.p)}%</td>
+      <td class="num"><span class="delta ${dcls}">${dtxt}</span></td>
+      <td class="l"><div style="height:7px;background:#1c2128;border-radius:4px;overflow:hidden;min-width:60px">
+        <div style="height:100%;width:${(r.v/maxV*100).toFixed(2)}%;background:${colorOf(r.num)}"></div></div></td>
+    </tr>`;
+  }).join("") +
+  (rows.length>LIMIT ? `<tr><td colspan="6" class="empty" style="padding:14px">
+      mostrando os top ${LIMIT} de ${nf.format(rows.length)} — use a busca para filtrar</td></tr>` : "");
+}
+
+/* ═══════════════ distribuição ═══════════════ */
+function renderDist(){
+  const L=state.last, box=$("dist");
+  if(!L){ box.innerHTML=`<div class="empty">—</div>`; return; }
+  const rs=ranked().filter(r=>!state.hidden.has(r.num));
+  const total=rs.reduce((a,b)=>a+b.v,0);
+
+  let html=rs.slice(0,14).map(r=>`
+    <div class="bar" title="${esc(r.nomeFull)} · ${nf.format(r.v)} votos">
+      <span class="nm">${esc(r.nome)}</span>
+      <span class="track"><span class="fill" style="width:${total?(r.v/total*100).toFixed(2):0}%;background:${colorOf(r.num)}"></span></span>
+      <span class="pct">${nf2.format(total?r.v/total*100:0)}%</span>
+    </div>`).join("");
+
+  html+=`<div style="height:1px;background:var(--bd);margin:12px 0"></div>`;
+  html+=[["Votos válidos",L.vv,"#3fb950"],["Brancos",L.vb,"#d29922"],["Nulos",L.vvn,"#f85149"],["Não informados",L.van,"#6e7681"]]
+    .filter(([,v])=>v>0)
+    .map(([l,v,c])=>`<div class="bar" style="font-size:11.5px;color:var(--fg2)">
+        <span class="nm" style="color:var(--fg2)">${l}</span>
+        <span class="track"><span class="fill" style="width:${L.tv?(v/L.tv*100).toFixed(2):0}%;background:${c}"></span></span>
+        <span class="pct">${nf.format(v)}</span></div>`).join("");
+  box.innerHTML=html;
+}
+
+function renderMeta(){
+  const L=state.last, n=state.points.length;
+  $("chartnote").textContent = demo.on
+    ? `EXEMPLO FICTÍCIO · ${n} pontos simulados · curva em S`
+    : (L ? `acumulado · ${n} coleta${n!==1?"s":""}${L.dg?" · arquivo TSE de "+L.dg+" "+L.hg:""} · clique na legenda para ocultar`
+          : "acumulado · escala linear");
+}
+
+/* ═══════════════ seletor cargo / UF ═══════════════ */
+function buildSelectors(){
+  $("cargo").innerHTML=CARGOS.map(c=>`<option value="${c.id}">${c.nome}</option>`).join("");
+  $("cargo").value=state.cargoId;
+  syncUf();
+}
+function syncUf(){
+  const c=cfg();
+  const opts=UFS.filter(([code])=>c.ufs.includes(code));
+  $("uf").innerHTML=opts.map(([code,nome])=>`<option value="${code}">${nome}</option>`).join("");
+  if(!c.ufs.includes(state.uf)) state.uf=c.ufs[0];
+  $("uf").value=state.uf;
+}
+function switchTo(cargoId, uf){
+  /* sair do exemplo ao trocar de cargo/UF: os números fictícios não valem para outro cargo */
+  if(demo.on) exitDemo();
+  state.cargoId=cargoId;
+  syncUf();
+  if(uf){ state.uf=uf; $("uf").value=uf; }
+  state.storageKey=`${LS_KEY}|${state.cargoId}|${state.uf}`;
+  state.hidden.clear();
+  state.search=""; $("fsearch").value="";
+  $("matrix").innerHTML="";
+  load();
+  render();
+  collect(true);
+}
+$("cargo").addEventListener("change",e=>switchTo(e.target.value,null));
+$("uf").addEventListener("change",e=>switchTo(state.cargoId,e.target.value));
+
+/* ═══════════════ varredura de todos os estados ═══════════════ */
+$("todas").addEventListener("click", async ()=>{
+  const btn=$("todas");
+  btn.disabled=true; btn.innerHTML='<span class="loading"></span> varrendo…';
+  const jobs=[];
+  for(const c of CARGOS) for(const uf of c.ufs) jobs.push({c,uf});
+  const total=jobs.length;
+  const out=[]; let done=0;
+
+  const worker=async ()=>{
+    while(jobs.length){
+      const {c,uf}=jobs.shift();
+      const p6=pad6(c.ele);
+      const url=`${HOST}/${CICLO}/${c.ele}/dados/${uf}/${uf}-c${c.cargo}-e${p6}-u.json?nocache=${Date.now()}`;
+      try{
+        const r=await fetch(url,{cache:"no-store"});
+        if(!r.ok) throw new Error(r.status);
+        const j=await r.json();
+        const v=j.v||{};
+        out.push({cargo:c.nome, cargoId:c.id, cargoCode:c.cargo, ele:c.ele, uf,
+          vv:num(v.vv), vvn:num(v.vvn), vb:num(v.vb),
+          total:num(v.vv)+num(v.vvn)+num(v.vb),
+          te:num(j.e?.te), st:num(j.s?.st), ts:num(j.s?.ts),
+          dg:j.dg||"", hg:j.hg||""});
+      }catch(e){}
+      done++; btn.innerHTML=`<span class="loading"></span> ${done}/${total}`;
+    }
+  };
+  await Promise.all([worker(),worker(),worker(),worker(),worker(),worker()]);
+  btn.disabled=false; btn.textContent="Ver todos os estados";
+  showMatrix(out, total);
+});
+
+function showMatrix(rows, scanned){
+  const byUf={};
+  for(const r of rows) (byUf[r.uf]=byUf[r.uf]||[]).push(r);
+  const ufs=Object.keys(byUf).sort((a,b)=>a.localeCompare(b));
+  const html=`
+  <div class="card" id="mx">
+    <header><h2>Resumo — todos os cargos e estados</h2>
+      <div class="note">${rows.length}/${scanned} combinações com dados · <button id="mxclose">fechar</button></div></header>
+    <div class="scroll" style="max-height:560px">
+      <table>
+        <thead><tr><th class="l">UF</th><th class="l">Cargo</th><th>Votos válidos</th>
+          <th>Total</th><th>Turno</th><th>Apuração</th><th class="l">Ir para</th></tr></thead>
+        <tbody>
+        ${ufs.map(uf=>{
+          const rs=byUf[uf].sort((a,b)=>a.cargo.localeCompare(b.cargo));
+          return rs.map((r,i)=>`
+            <tr>
+              <td class="l">${i===0?esc(ufNome(uf)):""}</td>
+              <td class="l">${esc(r.cargo)}</td>
+              <td class="num">${r.vv?nf.format(r.vv):"—"}</td>
+              <td class="num">${r.total?nf.format(r.total):"—"}</td>
+              <td class="num">${r.total&&r.te?nf2.format(r.total/r.te*100)+"%":"—"}</td>
+              <td class="num">${r.ts?nf2.format(r.st/r.ts*100)+"%":"—"}</td>
+              <td class="l"><button data-goto="${r.cargoId}|${r.uf}" style="padding:2px 8px;font-size:11px">abrir</button></td>
+            </tr>`).join("");
+        }).join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+  const tmp=document.createElement("div");
+  tmp.innerHTML=html;
+  const old=$("mx");
+  if(old) old.replaceWith(tmp.firstElementChild);
+  else $("matrix").appendChild(tmp.firstElementChild);
+  $("mxclose").addEventListener("click",()=>$("mx").remove());
+  $("mx").addEventListener("click",e=>{
+    const b=e.target.closest("[data-goto]");
+    if(!b) return;
+    const [cid,uf]=b.dataset.goto.split("|");
+    $("cargo").value=cid;
+    switchTo(cid,uf);
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+  $("mx").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ═══════════════ modo exemplo (dados fictícios) ═══════════════
+   Salva o histórico real, troca por uma curva sintética e restaura ao sair.
+   Serve só para ver o painel preenchido enquanto a apuração real não começa. */
+const demo = { on:false, savedPoints:null, savedLast:null };
+
+function buildDemo(){
+  const nums=Object.keys(state.cands);
+  const usados=nums.slice(0,12);
+  /* se o cargo tiver poucos candidatos, completa com placeholders */
+  const shares=[0.345,0.272,0.093,0.052,0.041,0.033,0.028,0.024,0.020,0.018,0.015,0.013];
+  const base=2_650_000;
+  const n=usados.length;
+  const shareOf=i => shares[i] ?? (0.012/ (1+i));
+  const ufs=["ac","al","am","ap","ba","ce","df","es","go","ma","mg","ms","mt","pa","pb","pe","pi","pr","rj","rn","ro","rr","rs","sc","se","to","sp"];
+  const te = state.uf==="br" ? 158745502 : 28000000 + (ufs.indexOf(state.uf)+1)*7000000;
+  const tsecoes = state.uf==="br" ? 499248 : 12000 + (ufs.indexOf(state.uf)+1)*900;
+  const fim=Date.now();
+  const N=52, passo=4*60000;   /* ~3,5 h de apuração, um ponto a cada 4 min */
+
+  const pts=[];
+  for(let i=0;i<N;i++){
+    const prog=(i+1)/N;
+    /* curva em S: rápido no começo, desacelera no fim — como a apuração real */
+    const s=1/(1+Math.exp(-7.5*(prog-0.42)));
+    const s0=1/(1+Math.exp(-7.5*(0-0.42))), s1=1/(1+Math.exp(-7.5*(1-0.42)));
+    const shaped=(s-s0)/(s1-s0);
+    const c={};
+    usados.forEach((num,k)=>{
+      /* ruído por candidato pra as curvas não ficarem cópias */
+      const wobble=1+0.055*Math.sin(i/3.1+k*1.7)+0.03*Math.cos(i/7+k);
+      c[num]={v:Math.round(base*shareOf(k)*shaped*wobble),
+              p:String(shareOf(k)*shaped*100).replace(".",",")};
+    });
+    pts.push({
+      t:fim-(N-i)*passo,
+      dg:new Date(fim).toLocaleDateString("pt-BR"),
+      hg:new Date(fim-(N-i)*passo).toTimeString().slice(0,8),
+      idg:"demo"+i,
+      vv:Math.round(base*shaped),
+      vvn:Math.round(base*0.041*shaped),
+      vb:Math.round(base*0.0165*shaped),
+      van:Math.round(base*0.004*shaped),
+      vnom:0,vsan:0,vscv:0,
+      tv:Math.round(base*1.068*shaped),
+      st:Math.round(tsecoes*shaped), si:Math.round(tsecoes*shaped), ts:tsecoes,
+      te, apur:shaped*100, c,
+    });
+  }
+  return { pts, n };
+}
+
+$("demo").addEventListener("click",()=>{
+  if(demo.on){ exitDemo(); return; }
+  if(!state.cands || !Object.keys(state.cands).length){
+    showBanner("warn","Deixe a primeira coleta real terminar antes de carregar o exemplo — ele reaproveita os nomes, partidos e fotos do TSE.");
+    return;
+  }
+  if(state.points.length && !confirm("O exemplo substitui a tela por dados fictícios. O histórico real fica salvo e volta ao clicar em “voltar ao real”. Continuar?")) return;
+
+  demo.savedPoints=state.points;
+  demo.savedLast=state.last;
+  demo.on=true;
+  stop();
+  const {pts}=buildDemo();
+  state.points=pts;
+  state.last=pts[pts.length-1];
+  $("demobanner").hidden=false;
+  $("demo").textContent="sair do exemplo";
+  $("demo").classList.add("on");
+  render();
+  $("banner").hidden=true;
+});
+
+function exitDemo(){
+  demo.on=false;
+  state.points=demo.savedPoints||[];
+  state.last=demo.savedLast||null;
+  demo.savedPoints=null; demo.savedLast=null;
+  $("demobanner").hidden=true;
+  $("demo").textContent="Ver exemplo";
+  $("demo").classList.remove("on");
+  render();
+  if(!state.points.length) collect(true);
+  else start();
+}
+$("demoexit").addEventListener("click",exitDemo);
+
+/* ═══════════════ fotos on/off ═══════════════ */
+$("fotos").addEventListener("click",()=>{
+  state.photos=!state.photos;
+  $("fotos").textContent=state.photos?"ligadas":"desligadas";
+  $("fotos").classList.toggle("on",state.photos);
+  render();
+});
+
+/* ═══════════════ busca ═══════════════ */
+let searchTimer=null;
+$("fsearch").addEventListener("input",e=>{
+  clearTimeout(searchTimer);
+  const v=e.target.value;
+  searchTimer=setTimeout(()=>{ state.search=v; renderTable(); },140);
+});
+$("fclear").addEventListener("click",()=>{
+  $("fsearch").value=""; state.search=""; renderTable(); $("fsearch").focus();
+});
+
+/* ═══════════════ polling ═══════════════ */
+function stop(){ state.running=false; clearTimeout(state.timer); $("toggle").textContent="▶ Iniciar"; $("toggle").classList.remove("primary"); setStatus("","pausado"); }
+function start(){ if(state.running) return; state.running=true; $("toggle").textContent="⏸ Pausar"; $("toggle").classList.add("primary"); loop(); }
+function loop(){
+  collect(false);
+  const iv=Number($("interval").value)*1000;
+  state.timer=setTimeout(()=>{ if(state.running) loop(); else $("status").textContent="pausado"; }, iv);
+}
+
+/* ═══════════════ CSV ═══════════════ */
+function toCSV(){
+  const pts=state.points;
+  if(!pts.length){ alert("Nada no histórico ainda."); return; }
+  const c=cfg(), ufn=ufNome(state.uf);
+  const nums=[...new Set(pts.flatMap(p=>Object.keys(p.c)))];
+  const head=["cargo","uf","hora_iso","hora_brt","votos_validos","nulos","brancos","total","secoes_apuradas","eletorado",...nums.map(n=>"c_"+n)];
+  const lines=[head.join(";")];
+  for(const p of pts)
+    lines.push([c.nome,ufn,new Date(p.t).toISOString(),fmtDT(p.t),p.vv,p.vvn,p.vb,p.tv,p.st,p.te,
+                 ...nums.map(n=>p.c[n]?.v??0)].join(";"));
+  const blob=new Blob(["﻿"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`apuracao-${state.uf}-${c.cargo}-${new Date().toISOString().slice(0,19).replace(/[:T]/g,"")}.csv`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ═══════════════ boot ═══════════════ */
+$("toggle").addEventListener("click",()=>state.running?stop():start());
+$("once").addEventListener("click",()=>collect(true));
+$("interval").addEventListener("change",()=>{ if(state.running){ clearTimeout(state.timer); loop(); } });
+$("csv").addEventListener("click",()=>{
+  if(demo.on && !confirm("O CSV será gerado a partir dos dados FICTÍCIOS do exemplo. Quer continuar?")) return;
+  toCSV();
+});
+$("clear").addEventListener("click",()=>{
+  if(demo.on) exitDemo();
+  if(state.points.length && !confirm("Apagar o histórico deste cargo/UF?")) return;
+  localStorage.removeItem(state.storageKey);
+  state.points=[]; state.last=null; state.hidden.clear();
+  render(); collect(true);
+});
+$("topn").addEventListener("change",e=>{ state.topN=Number(e.target.value); renderLegend(); drawChart(); });
+window.addEventListener("resize",resize);
+new ResizeObserver(resize).observe(cv.parentElement);
+
+buildSelectors();
+state.storageKey=`${LS_KEY}|${state.cargoId}|${state.uf}`;
+load();
+render();
+resize();
+collect(true).then(start);
+</script>
+</body>
+</html>
