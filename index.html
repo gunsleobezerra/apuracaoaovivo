@@ -66,19 +66,20 @@
     min-width:260px;
   }
   .election-logo{
-    height:56px;
+    height:60px;
     width:auto;
     object-fit:contain;
-    filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5));
-    border-radius:8px;
-    background:rgba(255,255,255,0.04);
-    padding:3px 6px;
-    border:1px solid rgba(255,255,255,0.08);
-    transition:transform .2s ease,border-color .2s ease;
+    border:none;
+    outline:none;
+    background:transparent;
+    padding:0;
+    margin:0;
+    box-shadow:none;
+    filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    transition:transform .2s ease;
   }
   .election-logo:hover{
-    transform:scale(1.04);
-    border-color:rgba(255,255,255,0.22);
+    transform:scale(1.03);
   }
   .head-title{flex:1;min-width:200px}
   h1{font-size:20px;font-weight:700;letter-spacing:-.3px;color:#fff}
@@ -501,7 +502,7 @@
   .pos.g1{background:#3d3520;color:#fcd34d;box-shadow:0 0 6px rgba(245,158,11,0.2)}
   .pos.g2{background:#1e293b;color:#93c5fa}
   .cand{display:flex;align-items:center;gap:9px}
-  .cand .ph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--bg3);flex-shrink:0;border:1px solid var(--bd)}
+  .cand .ph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--bg3);flex-shrink:0;border:none}
   .cand .ph.fallback{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
   .cand .sq{width:3px;height:30px;border-radius:2px;flex-shrink:0}
   .cand .nm{line-height:1.25;font-weight:500}
@@ -570,7 +571,7 @@
     body{padding:14px}
     header{flex-direction:column;align-items:stretch;gap:14px}
     .head-brand{width:100%;gap:12px}
-    .election-logo{height:46px;padding:2px 4px}
+    .election-logo{height:46px;padding:0;border:none;background:transparent}
     .controls{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -1309,19 +1310,19 @@ function drawChart(){
     ctx.fill();
     ctx.restore();
 
-    /* Foto do candidato ou iniciais coloridas */
+    /* Foto do candidato ou iniciais coloridas (sem bordas artificiais) */
     const img = (state.photos && h.photo) ? getCandImg(h.photo) : null;
     if(img){
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, cy, rad - 1, 0, Math.PI * 2);
+      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(img, cx - rad + 1, cy - rad + 1, (rad - 1) * 2, (rad - 1) * 2);
+      ctx.drawImage(img, cx - rad, cy - rad, rad * 2, rad * 2);
       ctx.restore();
     } else {
       ctx.fillStyle = h.color + "33";
       ctx.beginPath();
-      ctx.arc(cx, cy, rad - 1, 0, Math.PI * 2);
+      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = h.color;
@@ -1330,13 +1331,6 @@ function drawChart(){
       ctx.textBaseline = "middle";
       ctx.fillText(initials(h.nome), cx, cy);
     }
-
-    /* Anel colorido em volta da foto do candidato */
-    ctx.strokeStyle = h.color;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-    ctx.stroke();
 
     /* Nome e porcentagem do candidato ao lado da foto */
     const tx = cx + rad + 6;
